@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الأحياء الدقيقة التشخيصية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f7fa;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --text-color: #2c3e50;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #quiz-container {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .header { margin-bottom: 20px; }
+        .progress-bar {
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        #progress {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            text-align: left; /* الأسئلة بالإنجليزية */
+            direction: ltr;
+        }
+
+        .options {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .option-btn:hover:not([disabled]) {
+            border-color: var(--primary-color);
+            background-color: #f0f7ff;
+        }
+
+        .correct {
+            background-color: var(--success-color) !important;
+            color: white !important;
+            border-color: var(--success-color) !important;
+        }
+
+        .wrong {
+            background-color: var(--error-color) !important;
+            color: white !important;
+            border-color: var(--error-color) !important;
+        }
+
+        #next-btn {
+            display: none;
+            padding: 12px 30px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+
+        #result-container { display: none; }
+        .score { font-size: 2rem; color: var(--primary-color); margin: 20px 0; }
+        
+        button:disabled { cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div class="header">
+        <h2>اختبار الأحياء الدقيقة التشخيصية</h2>
+        <div class="progress-bar"><div id="progress"></div></div>
+        <p id="question-count">السؤال 1 من 59</p>
+    </div>
+
+    <div id="quiz-content">
+        <div class="question" id="question-text">Loading question...</div>
+        <div class="options" id="options-container"></div>
+        <button id="next-btn" onclick="nextQuestion()">السؤال التالي</button>
+    </div>
+
+    <div id="result-container">
+        <h3>انتهى الاختبار!</h3>
+        <p class="score" id="final-score"></p>
+        <button onclick="location.reload()" style="padding:10px 20px; border-radius:5px; border:none; background:#34495e; color:white; cursor:pointer;">إعادة المحاولة</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "Phase-contrast microscope, making it possible to see ...........", options: ["living cells with staining them", "killed cells without staining them", "living cells without staining them", "killed cells with staining them"], correct: 2 },
+        { q: "........... is technique that used to preserves overall morphology but not structures within the cells called.", options: ["Chemical fixation", "Biological fixation", "Heat fixation", "Both A+B"], correct: 2 },
+        { q: "India ink or nigrosin classified as...........", options: ["Simple stain", "Negative staining", "Differential stain", "AFB stain"], correct: 1 },
+        { q: "Water and oxygen (H2O + O2) released from Hydrogen peroxide (H2O2) by action which of the following enzyme...........", options: ["Catalase", "Oxidase", "Urease", "Indol test"], correct: 0 },
+        { q: "Presence of the enzyme........... can be determined by inoculating an organism to Stuart’s broth or Christensen’s agar ...........", options: ["Oxidase", "Catalase", "Urease", "Indol test"], correct: 2 },
+        { q: "........... generally used to separate organisms into major groups Enterobacteriaceae and Pseudomonas spp...........", options: ["Enrichment medium", "Selective medium", "O-F medium", "Enriched medium"], correct: 2 },
+        { q: "Dark-field useful for observing organisms such as ...........", options: ["Neisseria gonorrhoeae", "Mycobacterium tuberculosis", "Treponema pallidum", "Corynebacterium diphtheria"], correct: 2 },
+        { q: "Non-traditional methods for identification of pathogens or their products include.....", options: ["Molecular testing", "Saliva based testing", "Chromogeneic testing", "All of above"], correct: 3 },
+        { q: "Chemical fixation can be done using ......... and mercuric chloride.", options: ["ethanol", "acetic acid", "formaldehyde", "All of the above"], correct: 3 },
+        { q: "Impregnation methods are used for thickening bacterial cells by impregnation of .......", options: ["sodium chloride", "potassium chloride", "silver salts", "All of the above"], correct: 2 },
+        { q: "The net result of catalase test is .............", options: ["H2O+CO2", "O2+CO", "H2O+O2", "O2"], correct: 2 },
+        { q: "One of the following microscopes is used to detect Mycobacterium tuberculosis after staining and exposed to ultraviolet light .................", options: ["Dark-field microscope", "Phase-contrast microscope", "The Electron Microscope", "Fluorescence microscopy"], correct: 3 },
+        { q: "In clinical laboratories, susceptibility testing is usually performed by a disk diffusion or / and .......", options: ["MIC", "Catalase", "Oxidase", "All of above"], correct: 0 },
+        { q: "Antibiotics sensitivity tests are usually performed by following methods .......", options: ["Kirby-Bauer disk diffusion method", "Minimal inhibitory concentration method", "Automated antimicrobial susceptibility test systems", "All of above"], correct: 3 },
+        { q: "The MIC is the lowest....", options: ["Concentration of antibody reacts with antigen", "Dose of infectious agent causes disease", "Concentration of bacterial toxin damages the tissues", "Concentration of antibiotic that inhibits the bacterial growth"], correct: 3 },
+        { q: "All of the following are correct for antibiotic mechanisms of action EXCEPT.", options: ["Inhibition of growth factors in culture medium", "Alteration of cell membranes", "Inhibition of Protein Synthesis", "Inhibition of Nucleic acid synthesis"], correct: 0 },
+        { q: "Which of the following techniques cannot be used to determine the MIC of an antimicrobial drug against a particular microbe...........", options: ["E-test", "Microbroth dilution test", "Kirby-Bauer disk diffusion test", "Macrobroth dilution test"], correct: 2 },
+        { q: "The antibiotic is naturally produced by living microorganisms such as...........", options: ["Bacteria and parasites", "Parasites and viruses", "Viruses and fungi", "Bacteria and fungi"], correct: 3 },
+        { q: "Antimicrobial agents are nontoxic antimicrobial therapeutic agents, which include.....", options: ["Antiseptics", "antibiotics", "preservatives", "All of above"], correct: 3 },
+        { q: "Antimicrobial agents are ............ antimicrobial therapeutic agents.", options: ["poison", "toxic", "non-toxic", "None of them"], correct: 2 },
+        { q: "The lowest concentration of antibiotic that kills .........", options: ["100% of the bacteria", "50% of the bacteria", "30% of the bacteria", "70% of the bacteria"], correct: 0 },
+        { q: "In this method, tubes containing serial dilutions of an antibiotic are inoculated with the tested organism.", options: ["Agar dilution", "Tube dilution", "Broth dilution", "Disk diffusion"], correct: 1 },
+        { q: "Most ............. show unpredictable sensitivity patterns to various antibiotics and require susceptibility testing to determine appropriate antimicrobial therapy.", options: ["Gram-negative bacilli", "Enterococci", "staphylococcal species", "All of these"], correct: 3 },
+        { q: "The antibiotic that cause of Folate synthesis inhibitors", options: ["Ansamycines", "Sulfonamides", "Lipopeptides", "Rifampicin"], correct: 1 },
+        { q: "The antibiotic that cause of RNA synthesis inhibitors is..............", options: ["Ansamycines", "Sulfonamides", "Lipopeptides", "Tetracyclines"], correct: 0 },
+        { q: "The functions of cerebrospinal are .......................", options: ["Hydolic shock absorber", "Impacts the hunger sensation", "Regulation of intracranial pressure", "All of above"], correct: 3 },
+        { q: "All of the following bacteria are most often associated with acute neonatal meningitis except .........", options: ["Escherichia coli", "Streptococcus agalactiae", "Neisseria meningitides", "None of above"], correct: 3 },
+        { q: "Is a watery fluid, continuously produced and absorbed, which flows in the ventricles within the brain...", options: ["Brain abscess", "Blood stream", "Cerebrospinal", "Cerebellum"], correct: 2 },
+        { q: "Many brain abscesses have mixed bacterial infections, the predominant organisms include ............ ", options: ["Staphylococcus aureus", "Streptococcus intermedius", "Bacteroides", "All of above"], correct: 3 },
+        { q: "Common cause or bacteria that causes meningitis infected children 6 months to 5 years..........", options: ["Haemophilus influenzae", "Escherichia coli", "Streptococcus pneumoniae", "Staph. aureus"], correct: 0 },
+        { q: "Coffee-bean shaped diplococci, fastidious, grows best at 35-37°C with ~5% CO2...", options: ["Neisseria meningitides", "Haemophilus influenza", "Pseudomonas aeruginosa", "Treponema palladium"], correct: 0 },
+        { q: "Neisseria meningitides cause meningitis and infect ............", options: ["All age groups", "Adults", "Children", "Infants"], correct: 0 },
+        { q: "Which requires both hemin (X factor) and NAD for its growth?", options: ["Neisseria meningitides", "Neisseria gonorrhoeae", "Strep. pyogenes", "None of the above (H. influenzae)"], correct: 3 },
+        { q: "Common cause of meningitis in children 6 months to 5 years (repeated)..........", options: ["Haemophilus influenzae", "Escherichia coli", "Staph. epidermidis", "Staph. aureus"], correct: 0 },
+        { q: "Pyogenic infection of brain parenchyma begins with a localized area called.............", options: ["cellulites", "cerebritis", "Meningitis", "Arthritis"], correct: 1 },
+        { q: "Many brain abscesses have mixed bacterial infections include ------------", options: ["S. aureus & S. intermedius", "Bacteroides & anaerobes", "Fusobacterium & Enterobacteriaceae", "All of above"], correct: 3 },
+        { q: "A watery fluid, flows in the ventricles (cavities) within the brain...........", options: ["CSF", "Sputum", "Saliva", "Synovial fluid"], correct: 0 },
+        { q: "Which media grow almost all bacteria that cause meningitis?", options: ["Blood agar and macconkey", "Macconkey and chocolate", "Blood agar and chocolate", "Blood and Mannitol"], correct: 2 },
+        { q: "The best clinical specimen for bacterial meningitis .............", options: ["blood", "urine", "CSF", "stool"], correct: 2 },
+        { q: "Cytospin centrifuge is recommended because it is ............", options: ["more effectively than standard", "less effectively", "moderate effectively", "None of above"], correct: 0 },
+        { q: "Common Causes of Meningitis include..........", options: ["S. epidermidis & aureus", "H. influenzae", "S. Agalactiae & E.coli", "All of the above"], correct: 3 },
+        { q: "The immediate decision in CSF infection usually based on......", options: ["Cell count", "Glucose concentration", "Protein content", "All of the above"], correct: 3 },
+        { q: "Strep. agalactiae Cause meningitis and infect .........", options: ["mainly neonates", "all ages", "neonates to age 3 months", "immunocompromised"], correct: 2 },
+        { q: "Listeria monocytogenes Cause meningitis and infect .........", options: ["mainly neonates", "all ages", "children 6 months to 5 years", "neonates; elderly; immunocompromised"], correct: 3 },
+        { q: "Bacteria also cause meningitis of infection to neonates to age 3 months...........", options: ["Strep. agalactiae", "Listeria monocytogenes", "Staph. aureus", "Haemophilus influenza"], correct: 0 },
+        { q: "Neisseria meningitidis grows best at .............", options: ["40°C with ~5% CO2", "35-37°C with ~5% CO2", "37°C with ~2% CO2", "30°C with ~7% CO2"], correct: 1 },
+        { q: "Neisseria meningitidis are, except.....", options: ["coffee-bean diplococci", "occur intracellularly", "colonies become flatten and depressed", "appear as large opaque colonies"], correct: 2 },
+        { q: "Neisseria meningitidis are gram-negative diplococci that occur in ............. nuclei leukocytes", options: ["dimorphic", "monomorphic", "polymorphic", "None of them"], correct: 2 },
+        { q: "Oxidase test (+) and carbohydrate utilization (glucose, maltose)....", options: ["Treponema palladium", "Haemophilus influenzae", "Pseudomonas aeruginosa", "Neisseria meningitides"], correct: 3 },
+        { q: "All about Neisseria meningitides is true EXCEPT .......", options: ["Anaerobic", "Gram-negative", "Diplococci", "Oxidase test (+)"], correct: 0 },
+        { q: "Haemophilus influenzae requires which growth factors?", options: ["hemin and MND", "hemin and NAD", "hemin and KND", "Indole and NAD"], correct: 1 },
+        { q: "During bacterial culture Haemophilus influenzae produce -----------", options: ["A sharp indole smell", "A sharp lactic acid smell", "A sharp CO2 smell", "A sharp acetic acid smell"], correct: 0 },
+        { q: "Risk Factor of M. tuberculosis for nervous system infections is -----", options: ["Day care", "Crowded conditions", "Neonates", "Exposure, older age, immune compromise"], correct: 3 },
+        { q: "Risk Factor of Neisseria meningitidis for nervous system infections is ----", options: ["Day care", "Crowded conditions", "Neonates", "Exposure, older age"], correct: 1 },
+        { q: "Strep. pneumoniae colonies produce a zone of .............. Green", options: ["Beta hemolytic", "alpha-hemolysis", "pitting of the agar", "None of above"], correct: 1 },
+        { q: "A confirmatory test of Strep. pneumoniae is ...........", options: ["catalase (-)", "optochin tests", "bile solubility (+)", "urease (+)"], correct: 2 },
+        { q: "Neonatal meningitis is caused by ................", options: ["Salmonella", "Shigella", "Escherichia (E. coli)", "Neisseria"], correct: 2 },
+        { q: "Small, pleomorphic, gram-negative coccobacilli with random arrangements...", options: ["Treponema palladium", "Haemophilus influenzae", "Pseudomonas aeruginosa", "Neisseria meningitides"], correct: 1 },
+        { q: "The standard medium used for growth of H. influenzae is ............", options: ["Blood agar", "MacConkey agar", "Mannitol salt", "Chocolate agar plate"], correct: 3 }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const questionText = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+    const nextBtn = document.getElementById("next-btn");
+    const progress = document.getElementById("progress");
+    const qCountText = document.getElementById("question-count");
+
+    function loadQuestion() {
+        const currentQuestion = questions[currentQuestionIndex];
+        questionText.innerText = `${currentQuestionIndex + 1}. ${currentQuestion.q}`;
+        optionsContainer.innerHTML = "";
+        nextBtn.style.display = "none";
+        
+        qCountText.innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+        progress.style.width = `${((currentQuestionIndex) / questions.length) * 100}%`;
+
+        currentQuestion.options.forEach((option, index) => {
+            const button = document.createElement("button");
+            button.innerText = option;
+            button.classList.add("option-btn");
+            button.onclick = () => selectOption(index, button);
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function selectOption(index, button) {
+        const correctIndex = questions[currentQuestionIndex].correct;
+        const allButtons = optionsContainer.getElementsByClassName("option-btn");
+
+        if (index === correctIndex) {
+            button.classList.add("correct");
+            score++;
+        } else {
+            button.classList.add("wrong");
+            allButtons[correctIndex].classList.add("correct");
+        }
+
+        for (let btn of allButtons) {
+            btn.disabled = true;
+        }
+        nextBtn.style.display = "inline-block";
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        document.getElementById("quiz-content").style.display = "none";
+        document.getElementById("result-container").style.display = "block";
+        progress.style.width = "100%";
+        const percent = Math.round((score / questions.length) * 100);
+        document.getElementById("final-score").innerText = `نتيحتك: ${score} من ${questions.length} (${percent}%)`;
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
